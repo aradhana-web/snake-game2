@@ -1,0 +1,136 @@
+import turtle as t
+import random
+import time
+
+# Game settings
+delay = 0.1
+score = 0
+high_score = 0
+
+# Screen setup
+sc = t.Screen()
+sc.title("Snake Game")
+sc.bgcolor("blue")
+sc.setup(width=600, height=600)
+sc.tracer(0)
+
+# Snake head
+h = t.Turtle()
+h.shape("square")
+h.color("white")
+h.penup()
+h.goto(0, 0)
+h.direction = "Stop"
+
+# Food
+f = t.Turtle()
+f.speed(0)
+f.shape(random.choice(['square', 'triangle', 'circle']))
+f.color(random.choice(['red', 'green', 'black']))
+f.penup()
+f.goto(0, 100)
+
+# Score display
+p = t.Turtle()
+p.speed(0)
+p.shape("square")
+p.color("white")
+p.penup()
+p.hideturtle()
+p.goto(0, 250)
+p.write("Score : 0  High Score : 0", align="center", font=("candara", 24, "bold"))
+
+# Functions for direction
+def up():
+    if h.direction != "down":
+        h.direction = "up"
+def down():
+    if h.direction != "up":
+        h.direction = "down"
+def left():
+    if h.direction != "right":
+        h.direction = "left"
+def right():
+    if h.direction != "left":
+        h.direction = "right"
+
+def move():
+    if h.direction == "up":
+        h.sety(h.ycor() + 20)
+    if h.direction == "down":
+        h.sety(h.ycor() - 20)
+    if h.direction == "left":
+        h.setx(h.xcor() - 20)
+    if h.direction == "right":
+        h.setx(h.xcor() + 20)
+
+# Keyboard bindings
+sc.listen()
+sc.onkeypress(up, "Up")
+sc.onkeypress(down, "Down")
+sc.onkeypress(left, "Left")
+sc.onkeypress(right, "Right")
+
+# Body segments list
+segments = []
+
+# Main game loop
+while True:
+    sc.update()
+    # Screen boundary collision
+    if abs(h.xcor()) > 290 or abs(h.ycor()) > 290:
+        time.sleep(1)
+        h.goto(0, 0)
+        h.direction = "Stop"
+        f.goto(random.randint(-270, 270), random.randint(-270, 270))
+        for seg in segments:
+            seg.goto(1000, 1000)
+        segments.clear()
+        score = 0
+        delay = 0.1
+        p.clear()
+        p.write(f"Score : {score}  High Score : {high_score}", align="center", font=("candara", 24, "bold"))
+
+    # Food collision
+    if h.distance(f) < 20:
+        f.goto(random.randint(-270, 270), random.randint(-270, 270))
+        new_seg = t.Turtle()
+        new_seg.speed(0)
+        new_seg.shape("square")
+        new_seg.color("orange")
+        new_seg.penup()
+        segments.append(new_seg)
+        delay -= 0.001
+        score += 10
+        if score > high_score:
+            high_score = score
+        p.clear()
+        p.write(f"Score : {score}  High Score : {high_score}", align="center", font=("candara", 24, "bold"))
+
+    # Move the segments
+    for index in range(len(segments)-1, 0, -1):
+        x = segments[index-1].xcor()
+        y = segments[index-1].ycor()
+        segments[index].goto(x, y)
+    if segments:
+        segments[0].goto(h.xcor(), h.ycor())
+
+    move()
+
+    # Self-collision detection
+    for seg in segments:
+        if seg.distance(h) < 20:
+            time.sleep(1)
+            h.goto(0, 0)
+            h.direction = "Stop"
+            f.goto(random.randint(-270, 270), random.randint(-270, 270))
+            for seg in segments:
+                seg.goto(1000, 1000)
+            segments.clear()
+            score = 0
+            delay = 0.1
+            p.clear()
+            p.write(f"Score : {score}  High Score : {high_score}", align="center", font=("candara", 24, "bold"))
+            break
+
+    time.sleep(delay)
